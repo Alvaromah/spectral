@@ -24,7 +24,7 @@ Test input by scheduling keys: `zxs run --bin ... --keys "10:P*30,50:SPACE*5"`.
 
 | Symptom | Do |
 |---|---|
-| exit 2, `di-halt` / `tight-loop` | Read the verdict's `likelyCause`; docs/common-bugs.md |
+| exit 2, `di-halt` / `tight-loop` / `pc-in-rom` | Read the verdict's `likelyCause`; docs/common-bugs.md |
 | Garbage stripes when drawing | docs/screen-layout.md — the bitmap is interleaved |
 | Keys dead or inverted | docs/keyboard-input.md — active-low, CPL first |
 | Wrong colours | docs/attributes-and-colour.md |

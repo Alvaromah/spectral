@@ -125,6 +125,7 @@ export async function runCommand(opts: RunCommandOptions): Promise<number> {
   const next: string[] = [];
   if (hang) {
     if (hang.kind === 'tight-loop') next.push('if waiting for input: rerun with --keys "10:SPACE*5"');
+    if (hang.kind === 'pc-in-rom') next.push('zxs screen --text — back at the BASIC prompt? check SP and your last RET/JP');
     next.push('zxs regs', `zxs mem read ${hex(hang.pc)} --len 32`);
   } else if (status === 'breakpoint' || status === 'watchpoint') {
     next.push('zxs regs', 'zxs step 1', 'zxs disasm PC --count 8', 'zxs run --until-break to continue');

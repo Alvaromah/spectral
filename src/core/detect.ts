@@ -1,7 +1,7 @@
 import type { Z80 } from 'zx-generation/src/core/cpu.js';
 import type { Machine } from './machine.js';
 
-export type HangKind = 'di-halt' | 'rom-error' | 'tight-loop' | 'sp-corrupt';
+export type HangKind = 'di-halt' | 'rom-error' | 'tight-loop' | 'sp-corrupt' | 'pc-in-rom';
 
 export interface HangVerdict {
   kind: HangKind;
@@ -14,16 +14,23 @@ export interface HangVerdict {
 
 const SCREEN_START = 0x4000;
 const SCREEN_END = 0x5aff; // bitmap + attributes
+const ROM_END = 0x3fff;
 const RING_SIZE = 64;
 /** Frames without any screen write before a tight loop counts as hung. */
 const STATIC_FRAMES_THRESHOLD = 25;
+/**
+ * Frames of uninterrupted ROM execution (after the program ran from RAM)
+ * before concluding it crashed into the ROM. Generous (~1s) because long
+ * legitimate ROM calls exist (BEEP holds the CPU for the note's duration).
+ */
+const ROM_RESIDENCE_FRAMES_THRESHOLD = 50;
 
 /**
  * Run-time hang/crash classifier. Attach before a run (patches memory.write
  * on the instance to count screen writes), pass to RunOptions.watchdog, and
  * detach afterwards. Definite verdicts (di-halt, rom-error) stop the run
- * immediately; probable ones (tight-loop, sp-corrupt) are evaluated when the
- * frame budget is exhausted.
+ * immediately; probable ones (tight-loop, sp-corrupt, pc-in-rom) are
+ * evaluated when the frame budget is exhausted.
  */
 export class Watchdog {
   private ring = new Uint16Array(RING_SIZE);
@@ -31,6 +38,8 @@ export class Watchdog {
   private ringFilled = false;
   private framesSeen = 0;
   private lastScreenWriteFrame = 0;
+  private lastRamExecFrame = 0;
+  private sawRamExec = false;
   private haltFrames = 0;
   private sawHaltThisFrame = false;
   private origWrite: ((addr: number, value: number) => void) | undefined;
@@ -63,6 +72,11 @@ export class Watchdog {
     this.ring[this.ringIdx] = pc;
     this.ringIdx = (this.ringIdx + 1) % RING_SIZE;
     if (this.ringIdx === 0) this.ringFilled = true;
+
+    if (pc > ROM_END) {
+      this.lastRamExecFrame = this.framesSeen;
+      this.sawRamExec = true;
+    }
 
     if (pc === 0x0008) {
       // RST 8 — the ROM error restart. Only a crash when invoked from RAM:
@@ -133,6 +147,26 @@ export class Watchdog {
         detail: `SP=${hex(sp)} points into ROM — the stack has drifted out of RAM`,
         likelyCause: 'Unbalanced PUSH/POP or CALL/RET in a loop; the crash is only a matter of time.',
       };
+    }
+
+    // Checked before haltSynced: the ROM editor's key wait IS halt-synced,
+    // which is exactly how crashes into the BASIC editor used to hide.
+    if (this.sawRamExec) {
+      const romFrames = this.framesSeen - this.lastRamExecFrame;
+      if (romFrames > ROM_RESIDENCE_FRAMES_THRESHOLD) {
+        return {
+          kind: 'pc-in-rom',
+          pc: m.cpu.registers.getPC(),
+          confidence: 'probable',
+          detail:
+            `PC has stayed inside ROM (0x0000-0x3FFF) for ${romFrames} frames ` +
+            `since the program last executed from RAM`,
+          likelyCause:
+            'A wild jump or bad RET handed control back to the ROM — typically the BASIC ' +
+            'editor (check the screen for the © prompt or a report line). If you called a ' +
+            'long ROM routine on purpose (e.g. BEEP), raise the frame budget.',
+        };
+      }
     }
 
     if (this.haltSynced(framesRun)) return null; // healthy HALT-synced loop

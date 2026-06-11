@@ -214,7 +214,7 @@ export function createServer(): McpServer {
       description:
         'Run the live machine. Loading a program (bin/sna/z80/tap) boots clean first; ' +
         'otherwise execution continues from the current state. The watchdog classifies ' +
-        'hangs (di-halt, tight-loop, rom-error, sp-corrupt) and breakpoints/watchpoints ' +
+        'hangs (di-halt, tight-loop, rom-error, sp-corrupt, pc-in-rom) and breakpoints/watchpoints ' +
         'set via zx_debug are honored. Returns a JSON report; call zx_screen to see the display.',
       inputSchema: {
         bin: z.string().optional().describe('raw binary file to inject'),

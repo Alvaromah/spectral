@@ -43,6 +43,17 @@ describe('Watchdog', () => {
     expect(outcome.hang!.kind).toBe('sp-corrupt');
   });
 
+  it('pc-in-rom: crashing into the BASIC editor is flagged despite halt-sync', () => {
+    // EI ; LD B,5 ; loop: HALT ; DJNZ loop ; JP 0x12A2 (ROM MAIN-EXEC).
+    // A few healthy frames in RAM, then control falls into the ROM editor,
+    // whose key wait is halt-synced — the blind spot the Pong milestone found.
+    const program = [0xfb, 0x06, 0x05, 0x76, 0x10, 0xfd, 0xc3, 0xa2, 0x12];
+    const { outcome } = runWithWatchdog(program, 100);
+    expect(outcome.reason).toBe('hang');
+    expect(outcome.hang).toMatchObject({ kind: 'pc-in-rom', confidence: 'probable' });
+    expect(outcome.hang!.detail).toContain('ROM');
+  });
+
   it('healthy HALT-synced loop is NOT flagged', () => {
     // EI ; loop: HALT ; LD A,2 ; OUT (0xFE),A ; JR loop — a normal frame-synced loop
     // (JR offset 0xF9: from 0x8008 back to the HALT at 0x8001)

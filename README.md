@@ -58,8 +58,8 @@ Tools: `zx_build`, `zx_run`, `zx_screen`, `zx_inspect`, `zx_debug`
   PNG screenshots, `doctor`/`bench`, deterministic golden tests
 - ✅ **Phase 1 — agent feedback loop**: `.zxs/` sessions resumable across
   processes, frame-accurate key plans, ROM-font screen OCR (cheap text eyes),
-  hang watchdog (di-halt / tight-loop / rom-error / sp-corrupt, exit code 2),
-  SNA load + `.z80` export
+  hang watchdog (di-halt / tight-loop / rom-error / sp-corrupt / pc-in-rom,
+  exit code 2), SNA load + `.z80` export
 - ✅ **Phase 2 — debugger & tracer**: full Z80 disassembler (round-trip
   verified), SLD symbols (breakpoints by label or `file.asm:line`),
   watchpoints, `step --over`, hot-spot tracing — all symbolicated

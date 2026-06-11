@@ -20,6 +20,26 @@ PC spinning in a few addresses, screen static. Three possibilities:
 `DI` (or never `EI`) before a HALT-synced loop. Fix: `EI` immediately before
 the loop. If you DI'd for an atomic section, re-EI when leaving it.
 
+## <a id="pc-in-rom"></a>Watchdog says `pc-in-rom`
+
+Your program ran from RAM, then the PC moved into ROM (0x0000-0x3FFF) and
+never came back. Almost always a crash into the BASIC editor: a wild jump or
+a bad `RET` handed control to the ROM, which settles in its key-wait loop
+(halt-synced, screen mostly intact — check `zxs screen --text` for the ©
+prompt or a report line like `B Integer out of range`).
+
+Usual culprits:
+
+1. **Stack imbalance** — a leaked PUSH/POP or CALL/RET pair makes the final
+   `RET` pop garbage (see [stack drift](#stack-drift)).
+2. **Fell off the end** — execution ran past your last instruction into
+   uninitialized memory and bounced into ROM. End standalone loops with
+   `JR loop`, not a `RET` to nowhere.
+3. **Wild jump** — a computed JP/JR with a corrupted vector.
+
+False positive: a deliberately long ROM call (BEEP holds the CPU in ROM for
+the whole note). If that's you, raise `--frames`.
+
 ## <a id="screen-garbage"></a>Garbage stripes / scrambled drawing
 
 Wrong bitmap math — the screen is interleaved (screen-layout.md):
