@@ -34,13 +34,16 @@ cached) + canary job against zx-generation@latest.
 
 - Phases 0–4 COMPLETE; milestone passed: an agent built
   `examples/pong-by-agent/` unassisted.
-- Phase 5: all agent-executable work DONE (71 tests green, code at
-  `b464a74`): pc-in-rom watchdog ✓, recipes 12/12 ✓, gallery site ✓
-  (browser-verified). Left: owner-gated launch only (publish, upstream
-  PRs, npm, video) — see `tasks/queue.md`.
-- Owner decisions (2026-06-11): repo `spectral` will be PUBLIC; commit
-  authorship to be rewritten to the GitHub noreply email before the first
-  push. gh/npm auth not yet configured on this machine.
+- Phase 5: pc-in-rom watchdog ✓, recipes 12/12 ✓, gallery ✓, and
+  **PUBLISHED (2026-06-11)**: https://github.com/Alvaromah/spectral
+  (public), CI green on ubuntu+macos+canary, Pages live at
+  https://alvaromah.github.io/spectral/ (deployed from `gallery/` via
+  pages.yml). History was rewritten pre-push to the owner's GitHub
+  noreply identity (`16006835+Alvaromah@users.noreply.github.com`,
+  set in local git config). gh CLI authed with `workflow` scope; npm
+  still needs `npm login`.
+- Left: upstream PRs (T-02), npm v0.1.0 (T-05), video (T-07) —
+  see `tasks/queue.md`.
 
 ## Stable constraints
 
@@ -74,5 +77,4 @@ cached) + canary job against zx-generation@latest.
 
 ## Open questions
 
-- When to publish: GitHub repo + npm v0.1.0 are ready but the owner decides timing.
 - Whether `zxs-mcp` should also honor `.zxs/session.json` breakpoints (currently in-memory only).

@@ -4,6 +4,24 @@ This file summarizes the latest meaningful changes.
 Keep 5-10 useful entries, or roughly the last 30 days.
 Older details live in git history (commit messages are detailed).
 
+## 2026-06-11 - PUBLISHED (T-01): github.com/Alvaromah/spectral
+
+Areas: .github, .gitignore, git history
+
+Summary:
+Repo created public, CI green on ubuntu+macos+canary, Pages serving
+`gallery/` at https://alvaromah.github.io/spectral/ (pages.yml,
+build_type=workflow — note: the `paths:` filter doesn't fire on a new
+branch's first push; trigger via workflow_dispatch). Pre-push, all
+history rewritten to the owner's noreply identity. Two launch bugs fixed:
+(1) `.gitignore`'s blanket `build/` swallowed `src/build/` and
+`tests/build/` — the first push shipped without the sjasmplus wrapper;
+negated both paths. (2) The canary CI job lacked the sjasmplus install
+steps. gh CLI needed the `workflow` scope (`gh auth refresh -s workflow`)
+to push workflow files.
+
+Validation: CI run 27359869054 all green; Pages URLs return 200.
+
 ## 2026-06-11 - Gallery site (T-06): agent games playable in the browser
 
 Areas: gallery (new), README
