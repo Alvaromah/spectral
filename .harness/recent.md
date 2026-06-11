@@ -4,6 +4,24 @@ This file summarizes the latest meaningful changes.
 Keep 5-10 useful entries, or roughly the last 30 days.
 Older details live in git history (commit messages are detailed).
 
+## 2026-06-11 - Upstream MERGED + CI repaired: zx-generation green
+
+Areas: external (alvaromah/zx-generation)
+
+Summary:
+Owner authorized merging: PRs #2-#5 + dependabot #1 rebase-merged. Their
+checks were red because upstream CI had NEVER passed: every run died at
+setup (actions/upload-artifact@v3 retired by GitHub), and behind that the
+quality job had a wrong bundle filename, a coverage step parsing output
+jest never prints, an 80% coverage gate vs ~47% reality, format drift in
+27 files, 13 eslint errors, audit failures, and a Node 18 (EOL) lane that
+can't run the new toolchain (crypto global). PR #7 fixed all of it —
+first green CI in the repo's history; coverage threshold now a ratchet at
+the real baseline (~47%/28%). Upstream main: `9c300e4`, 327 tests.
+NOTE: upstream now has everything Spectral needs, but it is NOT
+published to npm yet — the pin stays at 1.0.1 until the owner releases
+(release.yml fires on v* tags; suggest v1.1.0: exports map is a feature).
+
 ## 2026-06-11 - Upstream PRs (T-02): zx-generation #2-#5
 
 Areas: external (alvaromah/zx-generation)

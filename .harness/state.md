@@ -42,10 +42,12 @@ cached) + canary job against zx-generation@latest.
   noreply identity (`16006835+Alvaromah@users.noreply.github.com`,
   set in local git config). gh CLI authed with `workflow` scope; npm
   still needs `npm login`.
-- Upstream PRs (T-02) OPENED on alvaromah/zx-generation: #2 .z80 header,
-  #3 shadow registers, #4 Node-safe guards, #5 entry point + exports map
-  — await owner review. Left: npm v0.1.0 (T-05, needs `npm login`),
-  video (T-07) — see `tasks/queue.md`.
+- Upstream (T-02) MERGED into alvaromah/zx-generation main (`9c300e4`):
+  .z80 header fixes, shadow registers in get/setState, Node-safe guards,
+  entry point + exports map, plus a full CI repair (first green CI in
+  that repo's history). NOT yet released to npm — Spectral's pin stays
+  1.0.1 until the owner tags a release. Left: npm v0.1.0 (T-05, needs
+  `npm login`), video (T-07, runbook ready) — see `tasks/queue.md`.
 
 ## Stable constraints
 

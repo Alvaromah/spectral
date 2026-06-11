@@ -15,12 +15,14 @@ Remaining:
 
 1. `T-05` npm publish v0.1.0 — owner must `npm login` first; then verify
    `npx zxs doctor` from a clean install.
-2. `T-07` video — owner records.
-3. zx-generation PRs #2-#5 await the owner's review/merge. If merged and
-   a new version is published: Spectral can drop the `regs.data['A_']`
-   workaround in `src/core/state.ts` (PR #3) and consider moving off
-   deep imports (PR #5) — bumping the pin requires re-verifying every
-   signature in `src/types/zx-generation.d.ts` and re-vendoring
+2. `T-07` video — owner records; runbook ready in
+   `tasks/pending/T-20260611-07-video-runbook.md`.
+3. zx-generation: ALL PRs MERGED (main `9c300e4`, CI green — see
+   recent.md). Upstream release is the owner's call (release.yml fires
+   on v* tags; suggest v1.1.0). AFTER a release: bump Spectral's pin
+   (re-verify every signature in `src/types/zx-generation.d.ts`), drop
+   the `regs.data['A_']` workaround in `src/core/state.ts`, consider
+   `import from 'zx-generation'` instead of deep paths, re-vendor
    `gallery/zxgeneration.esm.js`.
 
 ## Read order
