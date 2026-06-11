@@ -4,6 +4,25 @@ This file summarizes the latest meaningful changes.
 Keep 5-10 useful entries, or roughly the last 30 days.
 Older details live in git history (commit messages are detailed).
 
+## 2026-06-11 - Docs: quickstart-hello-world (npm + Claude Code via MCP)
+
+Areas: docs
+
+Summary:
+`docs/quickstart-hello-world.{md,html}` — getting-started tutorial for a
+FRESH machine WITHOUT the repo: install `@spectral-zx/toolkit` from npm,
+`zxs doctor`, register the MCP with `claude mcp add spectral -- zxs-mcp`,
+then ask Claude Code to print HELLO WORLD (zx_build→zx_run→zx_screen).
+Includes a no-agent CLI path with a verified `hello.asm` (CHAN-OPEN 0x1601
++ RST 0x10, no AT codes). The hello world was built+run live via the MCP
+server before writing — screen OCR showed "HELLO WORLD". Two gotchas
+documented: the `done: jr done` spin (a `ret` lets BASIC repaint over the
+text) and the matching `--no-detect-hangs` (the intentional spin would
+trip the tight-loop watchdog, exit 2). HTML follows the arkanoid-quickstart
+Tailwind template (no header image — links to a non-existent gallery
+screenshot avoided). Complements quickstart-arkanoid (clone-based). NOT
+shipped in the npm package (files = docs/reference only — intentional).
+
 ## 2026-06-11 - PUBLISHED to npm (T-05): @spectral-zx/toolkit@0.1.0
 
 Areas: package metadata, release
