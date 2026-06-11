@@ -1,0 +1,49 @@
+{
+  "name": "@spectral-zx/toolkit",
+  "version": "0.0.1",
+  "description": "Spectral — AI agent toolchain for the ZX Spectrum: assemble, run headless, observe, debug, iterate.",
+  "license": "MIT",
+  "author": "Alvaro Mateos",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "bin": {
+    "zxs": "./dist/cli/index.js",
+    "zxs-mcp": "./dist/mcp/server.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "docs",
+    "recipes"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src tests",
+    "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\""
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "commander": "^14.0.0",
+    "pngjs": "^7.0.0",
+    "zod": "^3.25.0",
+    "zx-generation": "1.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "@types/pngjs": "^6.0.5",
+    "prettier": "^3.5.0",
+    "tsup": "^8.4.0",
+    "typescript": "^5.8.0",
+    "vitest": "^3.1.0"
+  }
+}
