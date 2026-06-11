@@ -4,6 +4,21 @@ This file summarizes the latest meaningful changes.
 Keep 5-10 useful entries, or roughly the last 30 days.
 Older details live in git history (commit messages are detailed).
 
+## 2026-06-11 - Arkanoid quickstart: tutorial + example + 2nd gallery game
+
+Areas: docs, examples, gallery
+
+Summary:
+docs/quickstart-arkanoid.{md,html} — step-by-step tutorial (Spanish),
+every stage built and verified live before writing it. Final code in
+examples/arkanoid-quickstart/ (2/2 specs); playable in the gallery.
+Notable: the print_string zero-terminator ate the AT 0,0 operands —
+the EXACT Pong-milestone bug, rediscovered while writing the tutorial
+about avoiding it; cured with a register-based print_at helper.
+Browser check showed the snapshot border renders yellow (not white):
+that's upstream's .z80 border-bit bug, fixed in PR #2 but unreleased —
+re-vendor the gallery bundle after the zx-generation release.
+
 ## 2026-06-11 - Upstream MERGED + CI repaired: zx-generation green
 
 Areas: external (alvaromah/zx-generation)
