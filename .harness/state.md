@@ -1,6 +1,6 @@
 # Current State
 
-Last updated: 2026-06-11
+Last updated: 2026-06-11 (end of launch day)
 
 ## Solution summary
 
@@ -48,6 +48,10 @@ cached) + canary job against zx-generation@latest.
   that repo's history). NOT yet released to npm — Spectral's pin stays
   1.0.1 until the owner tags a release. Left: npm v0.1.0 (T-05, needs
   `npm login`), video (T-07, runbook ready) — see `tasks/queue.md`.
+- Owner-facing docs grew: `docs/spectral-guia-completa.{md,html}` (the
+  whole journey, Spanish) and `docs/quickstart-arkanoid.{md,html}`
+  (step-by-step tutorial; its verified code is
+  `examples/arkanoid-quickstart/`, 2/2 specs, second gallery game).
 
 ## Stable constraints
 
@@ -78,6 +82,15 @@ cached) + canary job against zx-generation@latest.
   `--frames`. Deterministic repro for tests: `JP 0x12A2` (ROM MAIN-EXEC).
 - Kempston (port 0x1F) is NOT emulated; unselected ports read 0xFF (a
   Kempston routine reads "all pressed"). Keyboard only.
+- RECURRING TRAP (bit the Pong agent AND the quickstart authoring): a
+  zero-terminated print_string eats `AT y,x` control operands when y or
+  x is 0 — the string silently truncates. Cure: send controls via
+  registers (`print_at` helper in examples/arkanoid-quickstart). Queued:
+  document in docs/reference/common-bugs.md.
+- Gallery snapshots show a YELLOW border in the browser until the
+  zx-generation release ships: upstream 1.0.1's .z80 loader reads border
+  from the wrong bits (fixed in upstream main, unreleased). Re-vendor
+  `gallery/zxgeneration.esm.js` after the release.
 
 ## Open questions
 

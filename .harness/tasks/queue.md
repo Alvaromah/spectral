@@ -19,6 +19,8 @@ Nothing agent-executable left — everything below needs the owner.
 
 ## Pending
 
+- common-bugs.md: document the zero-terminator vs control-operand trap (`AT y,x` with 0s truncates print_string) — it has bitten twice; the `print_at` cure lives in examples/arkanoid-quickstart
+- AFTER the zx-generation release (owner tags v1.1.0): bump the pin (re-verify the .d.ts), drop the `regs.data['A_']` workaround in state.ts, consider entry-point imports, re-vendor gallery bundle + ROM (fixes the yellow border)
 - Windows CI lane (sjasmplus .win.zip path in ci.yml)
 - `zxs run --tap` ergonomics: document/automate the J + SYM-P SYM-P LOAD"" dance
 - MCP: decide whether zxs-mcp shares `.zxs/session.json` breakpoints (see state.md open questions)
