@@ -4,6 +4,21 @@ This file summarizes the latest meaningful changes.
 Keep 5-10 useful entries, or roughly the last 30 days.
 Older details live in git history (commit messages are detailed).
 
+## 2026-06-11 - Phase 5 hardening: pc-in-rom watchdog + recipes 05-12
+
+Areas: src/core, src/cli, src/mcp, docs, recipes, templates
+
+Summary:
+Two queue tasks closed. T-03: new `pc-in-rom` hang verdict — flags >50
+frames of ROM-only execution after the program ran from RAM, checked
+BEFORE the haltSynced early-return (which is what hid BASIC-editor
+crashes). T-04: the six planned recipes (masked 16x16 sprites, IM2,
+beeper FX, BCD score, Metcalf PRNG cross-checked vs a JS model, attr
+effects); `zxs test recipes` 12/12.
+
+Validation: 71 vitest green; recipes 12/12; pong specs 2/2.
+Commits: `d080651`, `8ac66b6`.
+
 ## 2026-06-11 - Phase 4 + milestone: agent builds Pong unassisted
 
 Areas: docs, recipes, templates, src/cli, examples

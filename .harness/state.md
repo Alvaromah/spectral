@@ -32,9 +32,12 @@ cached) + canary job against zx-generation@latest.
 
 ## Current focus
 
-- Phases 0–4 COMPLETE (70 tests green, last commit `069ede6`). Milestone passed:
-  an agent built `examples/pong-by-agent/` unassisted.
-- Next: Phase 5 — see `tasks/queue.md` (publish, upstream PRs, gallery, video).
+- Phases 0–4 COMPLETE; milestone passed: an agent built
+  `examples/pong-by-agent/` unassisted.
+- Phase 5 in progress (71 tests green, last commit `8ac66b6`): pc-in-rom
+  watchdog ✓, recipes 12/12 ✓. Left: gallery site (agent-executable) and
+  the owner-gated items (publish, upstream PRs, npm, video) —
+  see `tasks/queue.md`.
 
 ## Stable constraints
 
@@ -57,9 +60,12 @@ cached) + canary job against zx-generation@latest.
 - Bench: ~6,600 fps headless ≈ 132× real hardware (~463 MHz equivalent).
 - `--raw=` works in DEVICE mode; SLD output requires the DEVICE directive.
 - Golden PNGs: regenerate with `UPDATE_GOLDEN=1 npm test`.
-- Watchdog blind spot (found by the Pong milestone): crashes into the BASIC
-  editor are halt-synced, so no hang verdict — screen observability
-  (nonBlankCells, OCR) is what catches them. Candidate fix: pc-in-rom detector.
+- Watchdog `pc-in-rom` (added 2026-06-11) closes the Pong-milestone blind
+  spot: crashes into the halt-synced BASIC editor are flagged at budget end
+  after >50 frames of ROM-only execution following RAM execution. The check
+  runs BEFORE the haltSynced early-return in `finalize()` — that order is
+  the fix. Known false positive: deliberately long ROM calls (BEEP) — raise
+  `--frames`. Deterministic repro for tests: `JP 0x12A2` (ROM MAIN-EXEC).
 - Kempston (port 0x1F) is NOT emulated; unselected ports read 0xFF (a
   Kempston routine reads "all pressed"). Keyboard only.
 

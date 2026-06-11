@@ -1,6 +1,6 @@
 # Handoff
 
-Last updated: 2026-06-11
+Last updated: 2026-06-11 (post T-03 + T-04)
 
 ## Mode for next session
 
@@ -8,9 +8,10 @@ execute queue
 
 ## Next action
 
-Pick the top item from `tasks/queue.md` (Phase 5: publish + upstream PRs),
-unless the owner asks for something else. Nothing is half-finished; the tree
-is clean at commit `069ede6` with 70 tests green.
+The only agent-executable queue item left is `T-20260611-06` (gallery
+site). Everything else in Phase 5 is owner-gated (GitHub publish, upstream
+PRs, npm, video) — don't start those without the owner. Tree is clean at
+commit `8ac66b6`, 71 vitest + 12/12 recipes green.
 
 ## Read order
 
@@ -22,7 +23,8 @@ is clean at commit `069ede6` with 70 tests green.
 
 Relevant recent entries:
 
-- `recent.md` — Phase 4 + the Pong milestone (2026-06-11)
+- `recent.md` — Phase 5 hardening (pc-in-rom + recipes), Phase 4 + Pong
+  milestone (2026-06-11)
 
 Relevant decisions:
 
@@ -35,8 +37,8 @@ Relevant decisions:
 
 ## Validation expectations
 
-- `npm test` → 70 tests green (builds dist first)
-- `node dist/cli/index.js test recipes` → 6/6
+- `npm test` → 71 tests green (builds dist first)
+- `node dist/cli/index.js test recipes` → 12/12
 - `node dist/cli/index.js test examples/pong-by-agent` → 2/2
 
 ## Risks or warnings
@@ -45,3 +47,5 @@ Relevant decisions:
   upstream changes, the canary CI job fails first; re-verify
   `src/types/zx-generation.d.ts` before bumping the pin.
 - Determinism is a test invariant: no wall-clock/randomness in `src/core/`.
+- Recipe tests pin emulator-deterministic outcomes (golden-style); if a
+  recipe demo changes, re-derive its pinned bytes empirically.
