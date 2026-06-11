@@ -40,14 +40,18 @@ cached) + canary job against zx-generation@latest.
   https://alvaromah.github.io/spectral/ (deployed from `gallery/` via
   pages.yml). History was rewritten pre-push to the owner's GitHub
   noreply identity (`16006835+Alvaromah@users.noreply.github.com`,
-  set in local git config). gh CLI authed with `workflow` scope; npm
-  still needs `npm login`.
+  set in local git config). gh CLI authed with `workflow` scope.
+- **npm: PUBLISHED `@spectral-zx/toolkit@0.1.0` (2026-06-11, public)**:
+  https://www.npmjs.com/package/@spectral-zx/toolkit. Org `spectral-zx`
+  (owner `alvaroma`). Clean-install-from-registry verified (bins linked,
+  `zxs doctor` green). Publish via granular token w/ bypass-2FA. zx-gen
+  pin still 1.0.1.
 - Upstream (T-02) MERGED into alvaromah/zx-generation main (`9c300e4`):
   .z80 header fixes, shadow registers in get/setState, Node-safe guards,
   entry point + exports map, plus a full CI repair (first green CI in
   that repo's history). NOT yet released to npm — Spectral's pin stays
-  1.0.1 until the owner tags a release. Left: npm v0.1.0 (T-05, needs
-  `npm login`), video (T-07, runbook ready) — see `tasks/queue.md`.
+  1.0.1 until the owner tags a release. Left: video (T-07, runbook
+  ready) — see `tasks/queue.md`. (npm T-05 DONE — published 0.1.0.)
 - Owner-facing docs grew: `docs/spectral-guia-completa.{md,html}` (the
   whole journey, Spanish) and `docs/quickstart-arkanoid.{md,html}`
   (step-by-step tutorial; its verified code is

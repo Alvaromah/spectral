@@ -4,6 +4,36 @@ This file summarizes the latest meaningful changes.
 Keep 5-10 useful entries, or roughly the last 30 days.
 Older details live in git history (commit messages are detailed).
 
+## 2026-06-11 - PUBLISHED to npm (T-05): @spectral-zx/toolkit@0.1.0
+
+Areas: package metadata, release
+
+Summary:
+**LIVE on npm**: https://www.npmjs.com/package/@spectral-zx/toolkit
+(v0.1.0, public). Verified by a clean install FROM THE REGISTRY (not a
+local tarball): both `zxs` + `zxs-mcp` bins symlink into
+node_modules/.bin/, `zxs doctor` is green, `zxs new` scaffolds with
+docs/reference. Owner set up the npm side: `npm login` (user `alvaroma`),
+created org `spectral-zx` (free plan, public pkgs), and published with a
+**granular access token w/ bypass-2FA** passed inline
+(`npm publish "--//registry.npmjs.org/:_authToken=npm_..."`) — the OTP
+relay kept expiring in transit, the token is the reliable path.
+Package prep: version 0.1.0, repository/homepage/bugs/keywords,
+`publishConfig.access: public` (scoped pkgs default to restricted),
+`prepack: tsup`, `files` narrowed `docs` → `docs/reference` (owner-only
+Spanish guides don't belong in the pkg; `zxs new` only copies
+docs/reference — verified). LICENSE added (MIT, was declared but missing).
+Tarball: 193.5 kB / 707.3 kB unpacked / 64 files.
+GOTCHA (documented for future releases): npm 11's publish prints
+`"bin[zxs]" script name dist/cli/index.js was invalid and removed` for
+bin paths with a `./` prefix. The message is MISLEADING — normalize.js
+strips the `./` and RE-ASSIGNS the entry (line 72: `pkg.bin[base] =
+binTarget`), so the bin survives as `dist/cli/index.js` and works. Fixed
+at the source anyway: bin paths now have no `./` prefix (exports map
+still needs `./` — those are correct as-is). Registry read-path (CDN)
+lagged ~1 min behind the `+ ...@0.1.0` success line; `npm access list
+packages` reflects ownership instantly when `npm view` still 404s.
+
 ## 2026-06-11 - Arkanoid quickstart: tutorial + example + 2nd gallery game
 
 Areas: docs, examples, gallery

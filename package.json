@@ -1,16 +1,38 @@
 {
   "name": "@spectral-zx/toolkit",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Spectral — AI agent toolchain for the ZX Spectrum: assemble, run headless, observe, debug, iterate.",
   "license": "MIT",
   "author": "Alvaro Mateos",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Alvaromah/spectral.git"
+  },
+  "homepage": "https://alvaromah.github.io/spectral/",
+  "bugs": {
+    "url": "https://github.com/Alvaromah/spectral/issues"
+  },
+  "keywords": [
+    "zx-spectrum",
+    "z80",
+    "emulator",
+    "sjasmplus",
+    "assembly",
+    "ai-agents",
+    "mcp",
+    "retro",
+    "game-development"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "type": "module",
   "engines": {
     "node": ">=20"
   },
   "bin": {
-    "zxs": "./dist/cli/index.js",
-    "zxs-mcp": "./dist/mcp/server.js"
+    "zxs": "dist/cli/index.js",
+    "zxs-mcp": "dist/mcp/server.js"
   },
   "exports": {
     ".": {
@@ -20,12 +42,13 @@
   },
   "files": [
     "dist",
-    "docs",
+    "docs/reference",
     "recipes",
     "templates"
   ],
   "scripts": {
     "build": "tsup",
+    "prepack": "tsup",
     "test": "tsup --silent && vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
