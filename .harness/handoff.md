@@ -20,7 +20,7 @@ present:
 3. `T-05` npm publish (owner runs `npm login` first).
 4. `T-07` video (owner records).
 
-Tree clean at `<harness close commit>`; code at `b4fe244`.
+Tree clean; code at `b464a74`.
 
 ## Read order
 

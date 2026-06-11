@@ -35,7 +35,7 @@ cached) + canary job against zx-generation@latest.
 - Phases 0–4 COMPLETE; milestone passed: an agent built
   `examples/pong-by-agent/` unassisted.
 - Phase 5: all agent-executable work DONE (71 tests green, code at
-  `b4fe244`): pc-in-rom watchdog ✓, recipes 12/12 ✓, gallery site ✓
+  `b464a74`): pc-in-rom watchdog ✓, recipes 12/12 ✓, gallery site ✓
   (browser-verified). Left: owner-gated launch only (publish, upstream
   PRs, npm, video) — see `tasks/queue.md`.
 - Owner decisions (2026-06-11): repo `spectral` will be PUBLIC; commit
