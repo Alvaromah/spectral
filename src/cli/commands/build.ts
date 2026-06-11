@@ -1,6 +1,7 @@
 import { relative } from 'node:path';
 import { build } from '../../build/sjasmplus.js';
 import { EXIT, emit } from '../output.js';
+import { loadSessionMeta, saveSessionMeta } from '../session.js';
 
 export interface BuildCommandOptions {
   outDir: string;
@@ -9,6 +10,13 @@ export interface BuildCommandOptions {
 
 export async function buildCommand(entry: string, opts: BuildCommandOptions): Promise<number> {
   const result = await build(entry, { outDir: opts.outDir });
+
+  // Record the SLD path so break/disasm/trace can resolve labels and lines.
+  if (result.ok && result.outputs.sld) {
+    const meta = loadSessionMeta();
+    meta.symbolsPath = result.outputs.sld;
+    saveSessionMeta(meta);
+  }
 
   const summary = {
     ok: result.ok,

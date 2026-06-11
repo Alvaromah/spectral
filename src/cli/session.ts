@@ -39,6 +39,49 @@ export function resetSession(stateFile?: string): void {
   rmSync(sessionStatePath(stateFile), { force: true });
 }
 
+/* ───────────────────────── session meta ───────────────────────── */
+
+export interface BreakpointEntry {
+  id: number;
+  spec: string;
+  addr: number;
+}
+
+export interface WatchpointEntry {
+  id: number;
+  type: 'read' | 'write';
+  from: number;
+  to: number;
+}
+
+/** Debugger state persisted alongside the machine state in .zxs/session.json. */
+export interface SessionMeta {
+  symbolsPath?: string;
+  breakpoints: BreakpointEntry[];
+  watchpoints: WatchpointEntry[];
+  nextId: number;
+}
+
+export function sessionMetaPath(stateFile?: string): string {
+  return join(dirname(sessionStatePath(stateFile)), 'session.json');
+}
+
+export function loadSessionMeta(stateFile?: string): SessionMeta {
+  const path = sessionMetaPath(stateFile);
+  if (!existsSync(path)) {
+    return { breakpoints: [], watchpoints: [], nextId: 1 };
+  }
+  return JSON.parse(readFileSync(path, 'utf8')) as SessionMeta;
+}
+
+export function saveSessionMeta(meta: SessionMeta, stateFile?: string): void {
+  const path = sessionMetaPath(stateFile);
+  mkdirSync(dirname(path), { recursive: true });
+  const tmp = `${path}.tmp`;
+  writeFileSync(tmp, JSON.stringify(meta, null, 2));
+  renameSync(tmp, path);
+}
+
 /* ───────────────────────── boot cache ───────────────────────── */
 
 function bootCachePath(): string {

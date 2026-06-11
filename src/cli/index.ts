@@ -1,6 +1,17 @@
 import { Command } from 'commander';
 import { benchCommand } from './commands/bench.js';
 import { buildCommand } from './commands/build.js';
+import {
+  breakAddCommand,
+  breakListCommand,
+  breakRmCommand,
+  disasmCommand,
+  stepCommand,
+  traceCommand,
+  watchAddCommand,
+  watchListCommand,
+  watchRmCommand,
+} from './commands/debug-cmds.js';
 import { doctorCommand } from './commands/doctor.js';
 import { keyCommand, typeCommand } from './commands/input-cmds.js';
 import {
@@ -50,6 +61,7 @@ program
   .option('--tap <file>', 'TAP/TZX tape to insert and play (drive the loader via keys)')
   .option('--frames <n>', 'frame budget (50 = 1 second)', '300')
   .option('--until-pc <addr>', 'stop when PC reaches this address')
+  .option('--until-break', 'run until a breakpoint/watchpoint hits (≥3000 frame budget)', false)
   .option('--keys <spec>', 'scheduled keys, e.g. "60:O*30,120:SPACE*5"')
   .option('--fresh', 'ignore the session and boot clean', false)
   .option('--no-save', 'do not persist the session state after the run')
@@ -164,6 +176,92 @@ state
   .option(...jsonOpt)
   .action((opts) => {
     process.exitCode = stateExportCommand(opts);
+  });
+
+const brk = program.command('break').description('Manage breakpoints (label, file:line or address)');
+brk
+  .command('add')
+  .argument('<spec>', 'label, file.asm:line, or address (0x8000)')
+  .option(...stateOpt)
+  .option(...jsonOpt)
+  .action((spec: string, opts) => {
+    process.exitCode = breakAddCommand(spec, opts);
+  });
+brk
+  .command('list')
+  .option(...stateOpt)
+  .option(...jsonOpt)
+  .action((opts) => {
+    process.exitCode = breakListCommand(opts);
+  });
+brk
+  .command('rm')
+  .argument('<idOrAll>', 'breakpoint id, or "all"')
+  .option(...stateOpt)
+  .option(...jsonOpt)
+  .action((idOrAll: string, opts) => {
+    process.exitCode = breakRmCommand(idOrAll, opts);
+  });
+
+const watch = program.command('watch').description('Manage memory watchpoints');
+watch
+  .command('add')
+  .option('--read <range>', 'watch reads, e.g. 0xBF00 or 0x5800-0x5AFF')
+  .option('--write <range>', 'watch writes')
+  .option(...stateOpt)
+  .option(...jsonOpt)
+  .action((opts) => {
+    process.exitCode = watchAddCommand(opts);
+  });
+watch
+  .command('list')
+  .option(...stateOpt)
+  .option(...jsonOpt)
+  .action((opts) => {
+    process.exitCode = watchListCommand(opts);
+  });
+watch
+  .command('rm')
+  .argument('<idOrAll>')
+  .option(...stateOpt)
+  .option(...jsonOpt)
+  .action((idOrAll: string, opts) => {
+    process.exitCode = watchRmCommand(idOrAll, opts);
+  });
+
+program
+  .command('step')
+  .description('Execute N instructions (--over steps across CALL/RST)')
+  .argument('[n]', 'instructions to step', '1')
+  .option('--over', 'step over CALL/RST subroutines', false)
+  .option(...stateOpt)
+  .option(...jsonOpt)
+  .action((n: string, opts) => {
+    process.exitCode = stepCommand(n, opts);
+  });
+
+program
+  .command('disasm')
+  .description('Disassemble from an address, label, or PC')
+  .argument('<spec>', 'address, label, file.asm:line, or PC')
+  .option('--count <n>', 'instructions to disassemble', '16')
+  .option(...stateOpt)
+  .option(...jsonOpt)
+  .action((spec: string, opts) => {
+    process.exitCode = disasmCommand(spec, opts);
+  });
+
+program
+  .command('trace')
+  .description('Run with instruction tracing: hot spots + recent instructions')
+  .option('--frames <n>', 'frames to trace', '5')
+  .option('--top <n>', 'hot addresses to report', '10')
+  .option('--last <n>', 'recent instructions to keep', '50')
+  .option('--out <file>', 'write the full report as JSON')
+  .option(...stateOpt)
+  .option(...jsonOpt)
+  .action((opts) => {
+    process.exitCode = traceCommand(opts);
   });
 
 program

@@ -13,6 +13,12 @@ export { KeyPlanRunner, compileTypeText, parseKeysSpec } from './core/input.js';
 export type { KeyEvent } from './core/input.js';
 export { applySna, applyState, serializeMachine, writeZ80v1, EMULATOR_ID } from './core/state.js';
 export type { ZxState } from './core/state.js';
+export { disassemble, disassembleOne } from './core/disasm.js';
+export type { DisasmLine } from './core/disasm.js';
+export { SymbolTable } from './core/symbols.js';
+export type { SourceLoc } from './core/symbols.js';
+export { Tracer, WatchpointMonitor } from './core/trace.js';
+export type { WatchHit, Watchpoint } from './core/trace.js';
 export { build, checkToolchain, INSTALL_HINT } from './build/sjasmplus.js';
 export type {
   BuildOptions,

@@ -1,21 +1,40 @@
 import type { HangVerdict, Watchdog } from './detect.js';
 import type { Machine } from './machine.js';
+import type { WatchHit, WatchpointMonitor } from './trace.js';
 
 export const TSTATES_PER_FRAME = 69888;
 
-export type StopReason = 'frames' | 'tstates' | 'until-pc' | 'max-frames' | 'hang';
+export type StopReason =
+  | 'frames'
+  | 'tstates'
+  | 'instructions'
+  | 'until-pc'
+  | 'max-frames'
+  | 'hang'
+  | 'breakpoint'
+  | 'watchpoint';
 
 export interface RunOptions {
   /** Stop after this many complete frames. */
   frames?: number;
   /** Stop after at least this many T-states have elapsed. */
   tstates?: number;
+  /** Stop after this many instructions (debugger stepping). */
+  instructions?: number;
   /** Stop when PC reaches this address (checked before each instruction). */
   untilPC?: number;
   /** Hard safety cap on frames per run() call. */
   maxFrames?: number;
   /** Called at each frame boundary with the frames-run count for this run. */
   onFrame?: (framesRun: number) => void;
+  /** Called before each instruction with its PC (tracer hook). */
+  onInstruction?: (pc: number) => void;
+  /** Stop when PC reaches any of these addresses. */
+  breakpoints?: ReadonlySet<number>;
+  /** Skip the breakpoint check for the very first instruction (resume from a hit). */
+  skipFirstBreakpoint?: boolean;
+  /** Memory access watchpoints; a hit stops after the triggering instruction. */
+  watchpoints?: WatchpointMonitor;
   /** Hang/crash classifier; definite verdicts stop the run immediately. */
   watchdog?: Watchdog;
 }
@@ -26,6 +45,8 @@ export interface RunOutcome {
   tstatesRun: number;
   pc: number;
   hang?: HangVerdict;
+  breakpoint?: { addr: number };
+  watchpointHit?: WatchHit;
 }
 
 const DEFAULT_MAX_FRAMES = 5000;
@@ -44,12 +65,17 @@ export function runMachine(m: Machine, opts: RunOptions = {}): RunOutcome {
   const targetFrames =
     opts.frames !== undefined ? Math.min(opts.frames, maxFrames) : maxFrames;
   const targetTstates = opts.tstates;
+  const targetInstructions = opts.instructions;
   const untilPC = opts.untilPC;
   const wd = opts.watchdog;
+  const breakpoints = opts.breakpoints;
+  const watch = opts.watchpoints;
 
   const { cpu, ula, tape } = m;
   let framesRun = 0;
   let tstatesRun = 0;
+  let instructionsRun = 0;
+  let skipBreakpoint = opts.skipFirstBreakpoint ?? false;
 
   const finish = (reason: StopReason): RunOutcome => {
     // Budget exhaustion is when probable hangs (tight-loop, sp-corrupt) show.
@@ -67,8 +93,17 @@ export function runMachine(m: Machine, opts: RunOptions = {}): RunOutcome {
     if (untilPC !== undefined && pc === untilPC) {
       return { reason: 'until-pc', framesRun, tstatesRun, pc };
     }
+    if (breakpoints?.has(pc)) {
+      if (!skipBreakpoint) {
+        return { reason: 'breakpoint', framesRun, tstatesRun, pc, breakpoint: { addr: pc } };
+      }
+    }
+    skipBreakpoint = false;
     if (targetTstates !== undefined && tstatesRun >= targetTstates) {
       return finish('tstates');
+    }
+    if (targetInstructions !== undefined && instructionsRun >= targetInstructions) {
+      return finish('instructions');
     }
 
     if (wd) {
@@ -77,12 +112,25 @@ export function runMachine(m: Machine, opts: RunOptions = {}): RunOutcome {
         return { reason: 'hang', framesRun, tstatesRun, pc, hang: verdict };
       }
     }
+    opts.onInstruction?.(pc);
 
     const elapsed = cpu.execute();
+    instructionsRun++;
     ula.addCycles(elapsed);
     ula.setTapeInput(tape.update(cpu.cycles));
     if (ula.shouldGenerateInterrupt()) {
       cpu.interrupt();
+    }
+
+    if (watch?.hit) {
+      const hit = watch.takeHit();
+      return {
+        reason: 'watchpoint',
+        framesRun,
+        tstatesRun: tstatesRun + elapsed,
+        pc: cpu.registers.getPC(),
+        watchpointHit: { ...hit!, pc },
+      };
     }
 
     if (wd) {
