@@ -65,8 +65,12 @@ Tools: `zx_build`, `zx_run`, `zx_screen`, `zx_inspect`, `zx_debug`
   watchpoints, `step --over`, hot-spot tracing — all symbolicated
 - ✅ **Phase 3 — MCP server**: persistent machine over stdio, screen as image
   content
-- ⏳ **Phase 4 — knowledge layer**: `zxs new` game scaffolding, agent-optimized
-  reference docs, CI-tested recipe cookbook
+- ✅ **Phase 4 — knowledge layer**: `zxs new` scaffolding (working skeleton +
+  agent playbook), 8 reference docs, CI-tested recipe cookbook, `zxs test`
+  declarative runner — **milestone passed: an AI agent built
+  [a playable Pong](examples/pong-by-agent/) unassisted in ~8 iterations**
+- ⏳ **Phase 5 — hardening & launch**: upstream PRs, npm publish, gallery site,
+  the time-lapse video
 
 ## License
 
