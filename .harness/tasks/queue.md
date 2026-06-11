@@ -10,7 +10,7 @@ Last updated: 2026-06-11
 
 ## Next (Phase 5 — hardening & launch)
 
-1. `T-20260611-06` - Gallery site: static page, each game = prompt + model + iterations + transcript + TAP download + "Play in browser" via zx-generation; seed with pong-by-agent
+Nothing agent-executable left — everything below needs the owner.
 
 ## Owner-gated (agent sessions skip these; owner triggers)
 
@@ -31,6 +31,7 @@ None.
 
 ## Done recently
 
+- `T-20260611-06` - Gallery site, verified in headless Chrome (see `tasks/done/T-20260611-06-gallery.md`)
 - `T-20260611-04` - Recipes 05 + 08-12, `zxs test recipes` 12/12 (see `tasks/done/T-20260611-04-recipes.md`)
 - `T-20260611-03` - Watchdog `pc-in-rom` detector (see `tasks/done/T-20260611-03-watchdog-pc-in-rom.md`)
 - Phases 0-4 complete — see `recent.md` and git history.

@@ -4,6 +4,24 @@ This file summarizes the latest meaningful changes.
 Keep 5-10 useful entries, or roughly the last 30 days.
 Older details live in git history (commit messages are detailed).
 
+## 2026-06-11 - Gallery site (T-06): agent games playable in the browser
+
+Areas: gallery (new), README
+
+Summary:
+Static no-build site in `gallery/`: card index + player page that boots
+the vendored zx-generation ESM bundle and loads per-game `.z80` snapshots
+(`zxs state export --z80`). Seeded with pong-by-agent + provenance
+contract. Key API fact: snapshots load in the `onReady` constructor
+callback (the documented 'ready' event doesn't exist in the bundle); pass
+`rom: '48k.rom'` to avoid the CDN default. Verified rendering + emulation
+with headless Chrome. Owner decisions recorded: repo will be PUBLIC,
+commits to be rewritten to the GitHub noreply identity before push
+(gh/npm auth not yet available on this machine).
+
+Validation: headless-Chrome screenshots of both pages; 71 vitest still green.
+Commit: `b4fe244`.
+
 ## 2026-06-11 - Phase 5 hardening: pc-in-rom watchdog + recipes 05-12
 
 Areas: src/core, src/cli, src/mcp, docs, recipes, templates

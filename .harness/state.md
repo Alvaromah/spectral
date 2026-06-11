@@ -34,10 +34,13 @@ cached) + canary job against zx-generation@latest.
 
 - Phases 0–4 COMPLETE; milestone passed: an agent built
   `examples/pong-by-agent/` unassisted.
-- Phase 5 in progress (71 tests green, last commit `8ac66b6`): pc-in-rom
-  watchdog ✓, recipes 12/12 ✓. Left: gallery site (agent-executable) and
-  the owner-gated items (publish, upstream PRs, npm, video) —
-  see `tasks/queue.md`.
+- Phase 5: all agent-executable work DONE (71 tests green, code at
+  `b4fe244`): pc-in-rom watchdog ✓, recipes 12/12 ✓, gallery site ✓
+  (browser-verified). Left: owner-gated launch only (publish, upstream
+  PRs, npm, video) — see `tasks/queue.md`.
+- Owner decisions (2026-06-11): repo `spectral` will be PUBLIC; commit
+  authorship to be rewritten to the GitHub noreply email before the first
+  push. gh/npm auth not yet configured on this machine.
 
 ## Stable constraints
 
