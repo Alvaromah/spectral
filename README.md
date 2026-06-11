@@ -69,8 +69,10 @@ Tools: `zx_build`, `zx_run`, `zx_screen`, `zx_inspect`, `zx_debug`
   agent playbook), 8 reference docs, CI-tested recipe cookbook, `zxs test`
   declarative runner — **milestone passed: an AI agent built
   [a playable Pong](examples/pong-by-agent/) unassisted in ~8 iterations**
-- ⏳ **Phase 5 — hardening & launch**: upstream PRs, npm publish, gallery site,
-  the time-lapse video
+- ⏳ **Phase 5 — hardening & launch**: pc-in-rom watchdog ✅, recipe cookbook
+  complete (12/12) ✅, [gallery site](gallery/) ✅ (`npx serve gallery` —
+  play the agents' games in your browser); left: GitHub/npm publish,
+  upstream PRs, the time-lapse video
 
 ## License
 
