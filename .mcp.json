@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "spectral": {
+      "command": "node",
+      "args": ["dist/mcp/server.js"]
+    }
+  }
+}

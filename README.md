@@ -39,21 +39,34 @@ binaries. On an Apple Silicon laptop: **~6,600 frames/second, 132× real
 hardware (~463 MHz Z80-equivalent)**. Running 5 emulated seconds of a game
 costs ~40ms.
 
+## MCP server
+
+`zxs-mcp` exposes the same toolkit over the Model Context Protocol with a
+persistent live machine — and `zx_screen` returns the display as an image, so
+Claude literally *sees* the Spectrum screen. The repo ships a project-scoped
+`.mcp.json`; open it with Claude Code (after `npm run build`) and ask:
+
+> load build/bounce.bin and tell me what's on the screen
+
+Tools: `zx_build`, `zx_run`, `zx_screen`, `zx_inspect`, `zx_debug`
+(breakpoints/watchpoints/step/disasm/trace), `zx_keys`, `zx_state`.
+
 ## Status
 
-Phase 0 (walking skeleton) — done:
-
-- ✅ Headless 48K Spectrum in Node (boots the real ROM to `© 1982 Sinclair Research Ltd`)
-- ✅ `zxs build` — sjasmplus wrapper with structured JSON diagnostics and did-you-mean hints
-- ✅ `zxs run` — binary/TAP injection, frame budgets, `--until-pc`, PNG screenshots
-- ✅ `zxs doctor` / `zxs bench`
-- ✅ Deterministic execution (golden-screenshot tests)
-
-Coming next (see the roadmap): session state files, hang/crash watchdog,
-text-mode screen OCR for cheap agent observation, source-level debugger (SLD),
-tracer, MCP server (Claude literally *sees* the Spectrum screen), `zxs new`
-game scaffolding, agent-optimized reference docs, and a cookbook of CI-tested
-Z80 recipes.
+- ✅ **Phase 0 — walking skeleton**: headless 48K Spectrum in Node (boots the
+  real ROM), `zxs build` (JSON diagnostics + did-you-mean hints), `zxs run`,
+  PNG screenshots, `doctor`/`bench`, deterministic golden tests
+- ✅ **Phase 1 — agent feedback loop**: `.zxs/` sessions resumable across
+  processes, frame-accurate key plans, ROM-font screen OCR (cheap text eyes),
+  hang watchdog (di-halt / tight-loop / rom-error / sp-corrupt, exit code 2),
+  SNA load + `.z80` export
+- ✅ **Phase 2 — debugger & tracer**: full Z80 disassembler (round-trip
+  verified), SLD symbols (breakpoints by label or `file.asm:line`),
+  watchpoints, `step --over`, hot-spot tracing — all symbolicated
+- ✅ **Phase 3 — MCP server**: persistent machine over stdio, screen as image
+  content
+- ⏳ **Phase 4 — knowledge layer**: `zxs new` game scaffolding, agent-optimized
+  reference docs, CI-tested recipe cookbook
 
 ## License
 
