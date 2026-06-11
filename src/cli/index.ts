@@ -14,6 +14,7 @@ import {
 } from './commands/debug-cmds.js';
 import { doctorCommand } from './commands/doctor.js';
 import { keyCommand, typeCommand } from './commands/input-cmds.js';
+import { newCommand } from './commands/new.js';
 import {
   memReadCommand,
   memWriteCommand,
@@ -22,6 +23,7 @@ import {
 } from './commands/inspect-cmds.js';
 import { runCommand } from './commands/run.js';
 import { screenCommand } from './commands/screen.js';
+import { testCommand } from './commands/test-cmd.js';
 import {
   stateExportCommand,
   stateLoadCommand,
@@ -262,6 +264,24 @@ program
   .option(...jsonOpt)
   .action((opts) => {
     process.exitCode = traceCommand(opts);
+  });
+
+program
+  .command('new')
+  .description('Scaffold a game project (working skeleton + agent playbook + docs)')
+  .argument('<name>', 'project directory name')
+  .option(...jsonOpt)
+  .action((name: string, opts) => {
+    process.exitCode = newCommand(name, opts);
+  });
+
+program
+  .command('test')
+  .description('Run declarative asm tests (test.json / *.test.json specs)')
+  .argument('[path]', 'directory or spec file to test', '.')
+  .option(...jsonOpt)
+  .action(async (path: string, opts) => {
+    process.exitCode = await testCommand(path, opts);
   });
 
 program

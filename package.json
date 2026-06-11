@@ -21,7 +21,8 @@
   "files": [
     "dist",
     "docs",
-    "recipes"
+    "recipes",
+    "templates"
   ],
   "scripts": {
     "build": "tsup",
