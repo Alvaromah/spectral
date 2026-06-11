@@ -13,12 +13,15 @@ https://alvaromah.github.io/spectral/ · CI green (ubuntu+macos+canary).
 
 Remaining:
 
-1. `T-02` upstream PRs to alvaromah/zx-generation (gh CLI is authed with
-   `workflow` scope; the owner OWNS upstream, so branch + PR directly, no
-   fork). Verify each claimed bug against upstream source before fixing —
-   especially (d): confirm which way the .z80 border-bit read is wrong.
-2. `T-05` npm publish v0.1.0 — owner must `npm login` first.
-3. `T-07` video — owner records.
+1. `T-05` npm publish v0.1.0 — owner must `npm login` first; then verify
+   `npx zxs doctor` from a clean install.
+2. `T-07` video — owner records.
+3. zx-generation PRs #2-#5 await the owner's review/merge. If merged and
+   a new version is published: Spectral can drop the `regs.data['A_']`
+   workaround in `src/core/state.ts` (PR #3) and consider moving off
+   deep imports (PR #5) — bumping the pin requires re-verifying every
+   signature in `src/types/zx-generation.d.ts` and re-vendoring
+   `gallery/zxgeneration.esm.js`.
 
 ## Read order
 

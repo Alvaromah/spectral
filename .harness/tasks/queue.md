@@ -14,7 +14,6 @@ Nothing agent-executable left — everything below needs the owner.
 
 ## Owner-gated (agent sessions skip these; owner triggers)
 
-- `T-20260611-02` - Upstream PRs to zx-generation: (a) src/index.js re-exports + package.json exports map, (b) shadow registers in Z80.getState()/setState(), (c) typeof guards for HTMLCanvasElement/document/ImageData, (d) .z80 loader border bits read as `&0x07` instead of `>>1 & 7`
 - `T-20260611-05` - npm publish `@spectral-zx/toolkit` v0.1.0 (after T-01; verify `npx zxs doctor` works from a clean install)
 - `T-20260611-07` - The money-shot video: re-run the Pong experiment recording the terminal (time-lapse, visible self-correction moment)
 
@@ -30,6 +29,7 @@ None.
 
 ## Done recently
 
+- `T-20260611-02` - 4 upstream PRs opened on alvaromah/zx-generation: #2 .z80 header flags1, #3 shadow registers in get/setState, #4 Node-safe guards, #5 entry point + exports map (await owner review/merge)
 - `T-20260611-01` - Published: https://github.com/Alvaromah/spectral (public), CI green on ubuntu+macos+canary, Pages live at https://alvaromah.github.io/spectral/ (2026-06-11)
 - `T-20260611-06` - Gallery site, verified in headless Chrome (see `tasks/done/T-20260611-06-gallery.md`)
 - `T-20260611-04` - Recipes 05 + 08-12, `zxs test recipes` 12/12 (see `tasks/done/T-20260611-04-recipes.md`)

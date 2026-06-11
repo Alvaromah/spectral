@@ -4,6 +4,21 @@ This file summarizes the latest meaningful changes.
 Keep 5-10 useful entries, or roughly the last 30 days.
 Older details live in git history (commit messages are detailed).
 
+## 2026-06-11 - Upstream PRs (T-02): zx-generation #2-#5
+
+Areas: external (alvaromah/zx-generation)
+
+Summary:
+Four PRs opened, each with new upstream tests, suite green: #2 .z80 v1
+header parsing (border bits 1-3, R bit 7 from flags1 bit 0, IM masked
+&0x03, 255→1 rule) + first snapshot tests; #3 shadow registers (a_..l_)
+in Z80.getState()/setState(); #4 Node-safe guards (instanceof
+HTMLCanvasElement, document listeners, window/navigator, getImageData)
++ @jest-environment node suite; #5 src/index.js entry + exports map
+(with ./src/* kept open — verified via npm pack that deep imports still
+resolve). When merged+published, Spectral can drop the regs.data
+workaround in state.ts and consider bumping the pin (re-verify the .d.ts).
+
 ## 2026-06-11 - PUBLISHED (T-01): github.com/Alvaromah/spectral
 
 Areas: .github, .gitignore, git history

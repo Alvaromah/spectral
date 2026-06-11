@@ -42,8 +42,10 @@ cached) + canary job against zx-generation@latest.
   noreply identity (`16006835+Alvaromah@users.noreply.github.com`,
   set in local git config). gh CLI authed with `workflow` scope; npm
   still needs `npm login`.
-- Left: upstream PRs (T-02), npm v0.1.0 (T-05), video (T-07) —
-  see `tasks/queue.md`.
+- Upstream PRs (T-02) OPENED on alvaromah/zx-generation: #2 .z80 header,
+  #3 shadow registers, #4 Node-safe guards, #5 entry point + exports map
+  — await owner review. Left: npm v0.1.0 (T-05, needs `npm login`),
+  video (T-07) — see `tasks/queue.md`.
 
 ## Stable constraints
 
