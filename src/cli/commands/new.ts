@@ -42,6 +42,9 @@ export function newCommand(name: string, opts: { json: boolean }): number {
   const root = toolkitRoot();
   copyTemplate(join(root, 'templates', 'game'), dest, name);
 
+  // Same playbook under the name Codex-style agents look for.
+  writeFileSync(join(dest, 'AGENTS.md'), readFileSync(join(dest, 'CLAUDE.md'), 'utf8'));
+
   // Local copy of the reference docs so the agent reads files, not URLs.
   const docsSrc = join(root, 'docs', 'reference');
   if (existsSync(docsSrc)) {
