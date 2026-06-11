@@ -1,50 +1,86 @@
 import { readFileSync, writeFileSync } from 'node:fs';
+import { Watchdog } from '../../core/detect.js';
+import { KeyPlanRunner, parseKeysSpec } from '../../core/input.js';
 import { Machine } from '../../core/machine.js';
 import { screenshotPNG } from '../../core/screen.js';
+import { screenText } from '../../core/screen-text.js';
 import { EXIT, emit, hex, parseAddress } from '../output.js';
+import { bootCachedMachine, loadSessionMachine, saveSessionMachine } from '../session.js';
 
 export interface RunCommandOptions {
   bin?: string;
   org: string;
   pc?: string;
+  sna?: string;
+  z80?: string;
   tap?: string;
   frames: string;
   untilPc?: string;
-  bootFrames: string;
+  keys?: string;
+  fresh: boolean;
+  save: boolean; // commander --no-save
+  detectHangs: boolean; // commander --no-detect-hangs
+  state?: string;
   screenshot?: string;
+  text: boolean;
   json: boolean;
 }
 
 /**
- * Phase 0 run: boot fresh, optionally inject a binary (or load a TAP),
- * run a frame budget, report state and optionally capture a screenshot.
- * Session/state-file persistence arrives in Phase 1.
+ * The agent's main loop command. Sessions: loading a program (or --fresh)
+ * starts from a cached clean boot; otherwise the previous session state in
+ * .zxs/state.zxstate is resumed. State is saved back after the run.
  */
 export async function runCommand(opts: RunCommandOptions): Promise<number> {
-  const bootFrames = parseInt(opts.bootFrames, 10);
   const frames = parseInt(opts.frames, 10);
+  const loadRequested = Boolean(opts.bin ?? opts.sna ?? opts.z80 ?? opts.tap);
 
-  const m = Machine.boot();
-  m.run({ frames: bootFrames });
+  let m: Machine;
+  let resumed = false;
+  if (opts.fresh || loadRequested) {
+    m = bootCachedMachine();
+  } else {
+    const session = loadSessionMachine(opts.state);
+    resumed = session !== null;
+    m = session ?? bootCachedMachine();
+  }
 
   let loaded: string | undefined;
   if (opts.bin) {
     const org = parseAddress(opts.org);
-    const data = new Uint8Array(readFileSync(opts.bin));
-    m.loadBinary(data, org, opts.pc !== undefined ? { pc: parseAddress(opts.pc) } : {});
+    m.loadBinary(
+      new Uint8Array(readFileSync(opts.bin)),
+      org,
+      opts.pc !== undefined ? { pc: parseAddress(opts.pc) } : {}
+    );
     loaded = `${opts.bin} @ ${hex(org)}`;
+  } else if (opts.sna) {
+    m.loadSna(new Uint8Array(readFileSync(opts.sna)));
+    loaded = opts.sna;
+  } else if (opts.z80) {
+    m.loadZ80(new Uint8Array(readFileSync(opts.z80)));
+    loaded = opts.z80;
   } else if (opts.tap) {
     m.loadTap(new Uint8Array(readFileSync(opts.tap)), opts.tap);
     m.playTape();
-    loaded = opts.tap;
+    loaded = `${opts.tap} (tape loaded+playing — drive the ROM loader with --keys / zxs key J, zxs type '""')`;
   }
+
+  const runner = new KeyPlanRunner(opts.keys ? parseKeysSpec(opts.keys) : [], m);
+  runner.applyDue(0);
+
+  const wd = opts.detectHangs ? new Watchdog() : undefined;
+  wd?.attach(m);
 
   const started = performance.now();
   const outcome = m.run({
-    frames,
+    frames: Math.max(frames, runner.planFrames),
     ...(opts.untilPc !== undefined ? { untilPC: parseAddress(opts.untilPc) } : {}),
+    onFrame: (f) => runner.applyDue(f),
+    ...(wd ? { watchdog: wd } : {}),
   });
   const wallTimeMs = Math.round(performance.now() - started);
+  wd?.detach();
 
   let screenshotPath: string | undefined;
   if (opts.screenshot) {
@@ -52,20 +88,37 @@ export async function runCommand(opts: RunCommandOptions): Promise<number> {
     screenshotPath = opts.screenshot;
   }
 
-  const screen = m.memory.getScreenMemory();
-  let nonBlankBytes = 0;
-  for (const b of screen) if (b !== 0) nonBlankBytes++;
+  let statePath: string | undefined;
+  if (opts.save && !m.tape.playing) {
+    statePath = saveSessionMachine(m, opts.state);
+  }
 
+  const text = screenText(m);
   const regs = m.getRegisters();
+  const hang = outcome.hang;
+  const status = hang ? 'hang' : 'ok';
+
+  const next: string[] = [];
+  if (hang) {
+    if (hang.kind === 'tight-loop') next.push('if waiting for input: rerun with --keys "10:SPACE*5"');
+    next.push('zxs regs', `zxs mem read ${hex(hang.pc)} --len 32`);
+  } else {
+    if (!screenshotPath) next.push('zxs screen --png screen.png to see the display');
+    next.push('zxs screen --text for the character grid');
+  }
+
   const result = {
-    ok: true,
+    ok: !hang,
     stage: 'run',
-    status: 'ok',
+    status,
     ...(loaded !== undefined ? { loaded } : {}),
+    ...(resumed ? { resumedSession: true } : {}),
     exit: { reason: outcome.reason, pc: hex(outcome.pc) },
+    ...(hang ? { hang: { ...hang, pc: hex(hang.pc) } } : {}),
     framesRun: outcome.framesRun,
     tstatesRun: outcome.tstatesRun,
     wallTimeMs,
+    ...(wd ? { loop: { haltSynced: wd.haltSynced(outcome.framesRun) } } : {}),
     registers: {
       pc: hex(regs.pc),
       sp: hex(regs.sp),
@@ -80,23 +133,34 @@ export async function runCommand(opts: RunCommandOptions): Promise<number> {
       halted: regs.halted,
     },
     screen: {
-      nonBlankBytes,
-      borderColor: m.ula.getBorderColor(),
+      nonBlankCells: text.nonBlankCells,
+      borderColor: text.borderColor,
+      ...(opts.text ? { rows: text.rows } : {}),
       ...(screenshotPath !== undefined ? { png: screenshotPath } : {}),
     },
-    next: screenshotPath
-      ? [`inspect ${screenshotPath}`]
-      : ['rerun with --screenshot screen.png to see the display'],
+    ...(statePath !== undefined ? { statePath } : {}),
+    next,
   };
 
-  emit(result, opts.json, () =>
-    [
-      `ran ${outcome.framesRun} frames (${outcome.tstatesRun} T-states) in ${wallTimeMs}ms — stopped: ${outcome.reason}`,
-      `PC=${hex(regs.pc)} SP=${hex(regs.sp)} AF=${hex(regs.af)} HL=${hex(regs.hl)} halted=${regs.halted}`,
-      `screen: ${nonBlankBytes} non-blank bitmap bytes, border ${m.ula.getBorderColor()}` +
-        (screenshotPath ? `, saved ${screenshotPath}` : ''),
-    ].join('\n')
-  );
+  emit(result, opts.json, () => {
+    const lines = [
+      `${status === 'ok' ? 'OK ' : '✗  '}ran ${outcome.framesRun} frames (${outcome.tstatesRun} T-states) in ${wallTimeMs}ms — stopped: ${outcome.reason}`,
+    ];
+    if (hang) {
+      lines.push(`HANG [${hang.kind}] (${hang.confidence}): ${hang.detail}`);
+      if (hang.likelyCause) lines.push(`likely cause: ${hang.likelyCause}`);
+    }
+    lines.push(
+      `PC=${hex(regs.pc)} SP=${hex(regs.sp)} AF=${hex(regs.af)} HL=${hex(regs.hl)} halted=${regs.halted}` +
+        (wd ? ` haltSynced=${wd.haltSynced(outcome.framesRun)}` : '')
+    );
+    lines.push(
+      `screen: ${text.nonBlankCells} non-blank cells, border ${text.borderColor}` +
+        (screenshotPath ? `, saved ${screenshotPath}` : '')
+    );
+    if (opts.text) lines.push('┌' + '─'.repeat(32) + '┐', ...text.rows.map((r) => `│${r}│`), '└' + '─'.repeat(32) + '┘');
+    return lines.join('\n');
+  });
 
-  return EXIT.OK;
+  return hang ? EXIT.HANG : EXIT.OK;
 }

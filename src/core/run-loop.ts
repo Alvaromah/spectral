@@ -1,8 +1,9 @@
+import type { HangVerdict, Watchdog } from './detect.js';
 import type { Machine } from './machine.js';
 
 export const TSTATES_PER_FRAME = 69888;
 
-export type StopReason = 'frames' | 'tstates' | 'until-pc' | 'max-frames';
+export type StopReason = 'frames' | 'tstates' | 'until-pc' | 'max-frames' | 'hang';
 
 export interface RunOptions {
   /** Stop after this many complete frames. */
@@ -13,8 +14,10 @@ export interface RunOptions {
   untilPC?: number;
   /** Hard safety cap on frames per run() call. */
   maxFrames?: number;
-  /** Called at each frame boundary with the new frame count. */
-  onFrame?: (frameCount: number) => void;
+  /** Called at each frame boundary with the frames-run count for this run. */
+  onFrame?: (framesRun: number) => void;
+  /** Hang/crash classifier; definite verdicts stop the run immediately. */
+  watchdog?: Watchdog;
 }
 
 export interface RunOutcome {
@@ -22,6 +25,7 @@ export interface RunOutcome {
   framesRun: number;
   tstatesRun: number;
   pc: number;
+  hang?: HangVerdict;
 }
 
 const DEFAULT_MAX_FRAMES = 5000;
@@ -31,9 +35,9 @@ const DEFAULT_MAX_FRAMES = 5000;
  * (zx-generation@1.0.1 src/spectrum/spectrum.js:466), minus sound:
  * execute -> ula.addCycles -> tape.update -> setTapeInput -> interrupt.
  *
- * Unlike upstream, this loop can stop mid-frame (untilPC); the partial-frame
- * position is kept in machine.tStatesIntoFrame so a later run resumes the
- * same frame where it left off.
+ * Unlike upstream, this loop can stop mid-frame (untilPC, hang verdicts);
+ * the partial-frame position is kept in machine.tStatesIntoFrame so a later
+ * run resumes the same frame where it left off.
  */
 export function runMachine(m: Machine, opts: RunOptions = {}): RunOutcome {
   const maxFrames = opts.maxFrames ?? DEFAULT_MAX_FRAMES;
@@ -41,17 +45,37 @@ export function runMachine(m: Machine, opts: RunOptions = {}): RunOutcome {
     opts.frames !== undefined ? Math.min(opts.frames, maxFrames) : maxFrames;
   const targetTstates = opts.tstates;
   const untilPC = opts.untilPC;
+  const wd = opts.watchdog;
 
   const { cpu, ula, tape } = m;
   let framesRun = 0;
   let tstatesRun = 0;
 
+  const finish = (reason: StopReason): RunOutcome => {
+    // Budget exhaustion is when probable hangs (tight-loop, sp-corrupt) show.
+    if (wd && (reason === 'frames' || reason === 'max-frames' || reason === 'tstates')) {
+      const verdict = wd.finalize(m, framesRun);
+      if (verdict) {
+        return { reason: 'hang', framesRun, tstatesRun, pc: cpu.registers.getPC(), hang: verdict };
+      }
+    }
+    return { reason, framesRun, tstatesRun, pc: cpu.registers.getPC() };
+  };
+
   for (;;) {
-    if (untilPC !== undefined && cpu.registers.getPC() === untilPC) {
-      return { reason: 'until-pc', framesRun, tstatesRun, pc: untilPC };
+    const pc = cpu.registers.getPC();
+    if (untilPC !== undefined && pc === untilPC) {
+      return { reason: 'until-pc', framesRun, tstatesRun, pc };
     }
     if (targetTstates !== undefined && tstatesRun >= targetTstates) {
-      return { reason: 'tstates', framesRun, tstatesRun, pc: cpu.registers.getPC() };
+      return finish('tstates');
+    }
+
+    if (wd) {
+      const verdict = wd.beforeInstruction(pc, m);
+      if (verdict) {
+        return { reason: 'hang', framesRun, tstatesRun, pc, hang: verdict };
+      }
     }
 
     const elapsed = cpu.execute();
@@ -61,6 +85,19 @@ export function runMachine(m: Machine, opts: RunOptions = {}): RunOutcome {
       cpu.interrupt();
     }
 
+    if (wd) {
+      const verdict = wd.afterInstruction(cpu);
+      if (verdict) {
+        return {
+          reason: 'hang',
+          framesRun,
+          tstatesRun: tstatesRun + elapsed,
+          pc: cpu.registers.getPC(),
+          hang: verdict,
+        };
+      }
+    }
+
     tstatesRun += elapsed;
     m.tStatesIntoFrame += elapsed;
 
@@ -68,13 +105,14 @@ export function runMachine(m: Machine, opts: RunOptions = {}): RunOutcome {
       m.tStatesIntoFrame -= TSTATES_PER_FRAME;
       m.frameCount++;
       framesRun++;
-      opts.onFrame?.(m.frameCount);
+      wd?.onFrame();
+      opts.onFrame?.(framesRun);
 
       if (opts.frames !== undefined && framesRun >= targetFrames) {
-        return { reason: 'frames', framesRun, tstatesRun, pc: cpu.registers.getPC() };
+        return finish('frames');
       }
       if (framesRun >= maxFrames) {
-        return { reason: 'max-frames', framesRun, tstatesRun, pc: cpu.registers.getPC() };
+        return finish('max-frames');
       }
     }
   }

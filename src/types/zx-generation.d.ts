@@ -151,8 +151,9 @@ declare module 'zx-generation/src/spectrum/tape.js' {
 }
 
 declare module 'zx-generation/src/spectrum/snapshot.js' {
-  export class SnapshotLoader {
-    constructor(spectrum: unknown);
+  /** .z80 v1 (48K) snapshot loader. Writes shadow registers via registers.data. */
+  export class Z80SnapshotLoader {
+    constructor(memory: unknown, cpu: unknown, ula: unknown);
     load(data: Uint8Array): void;
   }
 }

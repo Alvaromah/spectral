@@ -3,9 +3,11 @@ import { SpectrumMemory } from 'zx-generation/src/spectrum/memory.js';
 import { SpectrumULA, SPECTRUM_KEYS } from 'zx-generation/src/spectrum/ula.js';
 import { SpectrumDisplay } from 'zx-generation/src/spectrum/display.js';
 import { Tape } from 'zx-generation/src/spectrum/tape.js';
+import { Z80SnapshotLoader } from 'zx-generation/src/spectrum/snapshot.js';
 
 import { loadRom } from './rom.js';
 import { runMachine, type RunOptions, type RunOutcome } from './run-loop.js';
+import { applySna, applyState, serializeMachine, type ZxState } from './state.js';
 
 export interface LoadBinaryOptions {
   /** Where to jump after loading. Defaults to org. */
@@ -68,6 +70,28 @@ export class Machine {
     const m = new Machine();
     m.memory.loadROM(loadRom());
     return m;
+  }
+
+  /** Restores a machine from a .zxstate document. */
+  static fromState(state: ZxState): Machine {
+    const m = Machine.boot();
+    applyState(m, state);
+    return m;
+  }
+
+  saveState(): ZxState {
+    return serializeMachine(this);
+  }
+
+  /** Loads a 48K .sna snapshot (PC popped from the stack per convention). */
+  loadSna(data: Uint8Array): void {
+    applySna(this, data);
+  }
+
+  /** Loads a .z80 v1 48K snapshot via zx-generation's own loader. */
+  loadZ80(data: Uint8Array): void {
+    new Z80SnapshotLoader(this.memory, this.cpu, this.ula).load(data);
+    this.cpu.halted = false;
   }
 
   run(opts: RunOptions = {}): RunOutcome {
